@@ -2,6 +2,32 @@
 
 A web-based dashboard for doctors to manage patient medications and knowledge levels. This application is part of the KnowWell system, allowing doctors to monitor and update patient medication details.
 
+## Screenshots
+
+### Login
+![Dashboard Overview](public/1.png)
+* A secure authentication gateway for doctors to access the KnowWell dashboard with their credentials.*
+
+### Dashboard Overview
+![Patient Details](public/2.png)
+*A comprehensive view displaying all patients' list with their basic information and action buttons for quick access to patient management.*
+
+### Pending Request Page
+![Add Patient](public/3.png)
+*A centralized hub showing medication knowledge level upgrade requests from patients awaiting doctor approval or denial.*
+
+### Add New Patient  
+![Add Medications](public/4.png)
+*A streamlined form interface for registering new patients with their personal information and initial medication prescriptions.*
+
+### Edit Patient Details
+![Edit Patient](public/5.png)
+*A detailed editing interface allowing doctors to modify patient information, medication dosages, and knowledge levels.*
+
+### Add New Medicines To Already Implemented Users
+![Knowledge Level](public/6.png)
+*A modal interface for prescribing additional medications to existing patients with customizable dosage, timing, and knowledge level settings.*
+
 ## Features
 
 - **Patient Management**
@@ -74,6 +100,13 @@ doctor-dashboard/
 │   │   └── PatientDetails.jsx # Patient details view
 │   ├── firebase.js        # Firebase configuration
 │   └── ...
+├── public/
+│   ├── 1.png             # Dashboard screenshot
+│   ├── 2.png             # Patient details screenshot
+│   ├── 3.png             # Add patient screenshot
+│   ├── 4.png             # Add medications screenshot
+│   ├── 5.png             # Edit patient screenshot
+│   └── 6.png             # Knowledge level screenshot
 ├── .env                   # Environment variables (git-ignored)
 ├── .env.example          # Example environment variables
 └── ...
@@ -142,7 +175,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Support
 
-For support, please contact [p_nikjooy(at)yahoo.com].
+For support, please contact [contact information].
 
 ## Acknowledgments
 
