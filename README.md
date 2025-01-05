@@ -86,31 +86,7 @@ VITE_FIREBASE_MEASUREMENT_ID=your_measurement_id
 npm run dev
 ```
 
-## Project Structure
 
-```
-doctor-dashboard/
-├── src/
-│   ├── components/
-│   │   ├── ui/            # Shadcn UI components
-│   │   └── ...           # Other components
-│   ├── pages/
-│   │   ├── Dashboard.jsx  # Main dashboard view
-│   │   ├── AddPatient.jsx # Add patient form
-│   │   └── PatientDetails.jsx # Patient details view
-│   ├── firebase.js        # Firebase configuration
-│   └── ...
-├── public/
-│   ├── 1.png             # Dashboard screenshot
-│   ├── 2.png             # Patient details screenshot
-│   ├── 3.png             # Add patient screenshot
-│   ├── 4.png             # Add medications screenshot
-│   ├── 5.png             # Edit patient screenshot
-│   └── 6.png             # Knowledge level screenshot
-├── .env                   # Environment variables (git-ignored)
-├── .env.example          # Example environment variables
-└── ...
-```
 
 ## Database Structure
 
