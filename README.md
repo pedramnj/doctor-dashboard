@@ -6,7 +6,7 @@ A web-based dashboard for doctors to manage patient medications and knowledge le
 
 ### Login
 ![Dashboard Overview](public/1.png)
-* A secure authentication gateway for doctors to access the KnowWell dashboard with their credentials.*
+*A secure authentication gateway for doctors to access the KnowWell dashboard with their credentials.*
 
 ### Dashboard Overview
 ![Patient Details](public/2.png)
