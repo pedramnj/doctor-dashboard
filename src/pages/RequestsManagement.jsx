@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, updateDoc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Alert, AlertDescription, AlertTitle } from '../components/ui/alert';
 
@@ -17,7 +17,7 @@ const RequestsManagement = () => {
       setLoading(true);
       const allRequests = [];
       
-      // Get all users instead of patients
+      // Get all users
       const usersSnapshot = await getDocs(collection(db, 'users'));
 
       for (const userDoc of usersSnapshot.docs) {
@@ -31,7 +31,7 @@ const RequestsManagement = () => {
           if (med.PendingRequest?.Status === 'Pending') {
             allRequests.push({
               patientId: userId,
-              patientName: userId, // Using User ID as name (User1, User2, etc.)
+              patientName: userId,
               medicationId: medDoc.id,
               medicationName: med.DrugTitle || medDoc.id,
               requestedLevel: med.PendingRequest.KnowledgeLevel,
@@ -57,19 +57,26 @@ const RequestsManagement = () => {
   const handleRequest = async (patientId, medicationId, approved, message = '') => {
     try {
       const docRef = doc(db, patientId, medicationId);
+      
+      // Get current document data
+      const docSnap = await getDoc(docRef);
+      const currentData = docSnap.data();
+      
+      // Prepare update data while preserving existing structure
       const updateData = {
-        'PendingRequest.Status': approved ? 'Accepted' : 'Denied',
-        'PendingRequest.Message': message,
+        PendingRequest: {
+          ...currentData.PendingRequest, // Preserve existing fields
+          Status: approved ? 'Accepted' : 'Denied',
+          Message: approved 
+            ? 'Your request for changing the knowledge level has been accepted.' 
+            : message,
+          KnowledgeLevel: currentData.PendingRequest.KnowledgeLevel // Preserve requested knowledge level
+        }
       };
 
-      // If approved, update the knowledge level
+      // If approved, update the main knowledge level
       if (approved) {
-        const request = requests.find(
-          r => r.patientId === patientId && r.medicationId === medicationId
-        );
-        if (request) {
-          updateData.KnowledgeLevel = request.requestedLevel;
-        }
+        updateData.KnowledgeLevel = currentData.PendingRequest.KnowledgeLevel;
       }
 
       await updateDoc(docRef, updateData);
@@ -89,6 +96,17 @@ const RequestsManagement = () => {
         title: 'Error',
         message: 'Failed to process request'
       });
+    }
+  };
+
+  const handleApprove = (patientId, medicationId) => {
+    handleRequest(patientId, medicationId, true);
+  };
+
+  const handleDeny = (patientId, medicationId) => {
+    const message = prompt('Please enter denial reason:');
+    if (message?.trim()) {
+      handleRequest(patientId, medicationId, false, message);
     }
   };
 
@@ -160,18 +178,13 @@ const RequestsManagement = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap space-x-2">
                     <button
-                      onClick={() => handleRequest(request.patientId, request.medicationId, true)}
+                      onClick={() => handleApprove(request.patientId, request.medicationId)}
                       className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 transition-colors"
                     >
                       Approve
                     </button>
                     <button
-                      onClick={() => {
-                        const message = prompt('Please enter denial reason:');
-                        if (message) {
-                          handleRequest(request.patientId, request.medicationId, false, message);
-                        }
-                      }}
+                      onClick={() => handleDeny(request.patientId, request.medicationId)}
                       className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition-colors"
                     >
                       Deny
