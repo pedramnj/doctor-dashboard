@@ -58,27 +58,27 @@ const RequestsManagement = () => {
     try {
       const docRef = doc(db, patientId, medicationId);
       
-      // Get current document data
+      // Get current document
       const docSnap = await getDoc(docRef);
       const currentData = docSnap.data();
       
-      // Prepare update data while preserving existing structure
+      // Create the exact structure for PendingRequest
       const updateData = {
         PendingRequest: {
-          ...currentData.PendingRequest, // Preserve existing fields
+          KnowledgeLevel: currentData.PendingRequest.KnowledgeLevel,
           Status: approved ? 'Accepted' : 'Denied',
           Message: approved 
-            ? 'Your request for changing the knowledge level has been accepted.' 
-            : message,
-          KnowledgeLevel: currentData.PendingRequest.KnowledgeLevel // Preserve requested knowledge level
+            ? 'Your request for changing the knowledge level has been accepted.'
+            : message
         }
       };
 
-      // If approved, update the main knowledge level
+      // If approved, also update the main knowledge level
       if (approved) {
         updateData.KnowledgeLevel = currentData.PendingRequest.KnowledgeLevel;
       }
 
+      // Update document
       await updateDoc(docRef, updateData);
 
       setAlert({
@@ -106,7 +106,7 @@ const RequestsManagement = () => {
   const handleDeny = (patientId, medicationId) => {
     const message = prompt('Please enter denial reason:');
     if (message?.trim()) {
-      handleRequest(patientId, medicationId, false, message);
+      handleRequest(patientId, medicationId, false, message.trim());
     }
   };
 
@@ -123,9 +123,11 @@ const RequestsManagement = () => {
       <h1 className="text-2xl font-bold mb-6">Knowledge Level Requests</h1>
 
       {alert && (
-        <Alert className={`mb-4 ${
-          alert.type === 'error' ? 'bg-red-100' : 'bg-green-100'
-        }`}>
+        <Alert 
+          className={`mb-4 ${
+            alert.type === 'error' ? 'bg-red-100' : 'bg-green-100'
+          }`}
+        >
           <AlertTitle>{alert.title}</AlertTitle>
           <AlertDescription>{alert.message}</AlertDescription>
         </Alert>
