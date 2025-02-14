@@ -2,11 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { collection, query, where, getDocs, doc, updateDoc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Alert, AlertDescription, AlertTitle } from '../components/ui/alert';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../components/ui/dialog';
+import { Button } from '../components/ui/button';
+import { Textarea } from '../components/ui/textarea';
 
 const RequestsManagement = () => {
   const [requests, setRequests] = useState([]);
   const [alert, setAlert] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showDialog, setShowDialog] = useState(false);
+  const [dialogData, setDialogData] = useState({
+    patientId: '',
+    medicationId: '',
+    isApproval: false,
+    message: ''
+  });
 
   useEffect(() => {
     fetchRequests();
@@ -54,40 +64,44 @@ const RequestsManagement = () => {
     }
   };
 
-  const handleRequest = async (patientId, medicationId, approved, message = '') => {
+  const handleRequest = async () => {
+    const { patientId, medicationId, isApproval, message } = dialogData;
+    
+    if (!message.trim()) {
+      setAlert({
+        type: 'error',
+        title: 'Error',
+        message: 'Please enter a message'
+      });
+      return;
+    }
+
     try {
       const docRef = doc(db, patientId, medicationId);
-      
-      // Get current document
       const docSnap = await getDoc(docRef);
       const currentData = docSnap.data();
       
-      // Create the exact structure for PendingRequest
       const updateData = {
         PendingRequest: {
           KnowledgeLevel: currentData.PendingRequest.KnowledgeLevel,
-          Status: approved ? 'Accepted' : 'Denied',
-          Message: approved 
-            ? 'Your request for changing the knowledge level has been accepted.'
-            : message
+          Status: isApproval ? 'Accepted' : 'Denied',
+          Message: message.trim()
         }
       };
 
-      // If approved, also update the main knowledge level
-      if (approved) {
+      if (isApproval) {
         updateData.KnowledgeLevel = currentData.PendingRequest.KnowledgeLevel;
       }
 
-      // Update document
       await updateDoc(docRef, updateData);
 
       setAlert({
         type: 'success',
         title: 'Success',
-        message: `Request ${approved ? 'approved' : 'denied'} successfully`
+        message: `Request ${isApproval ? 'approved' : 'denied'} successfully`
       });
 
-      // Refresh the requests list
+      setShowDialog(false);
       fetchRequests();
     } catch (error) {
       console.error('Error processing request:', error);
@@ -99,15 +113,14 @@ const RequestsManagement = () => {
     }
   };
 
-  const handleApprove = (patientId, medicationId) => {
-    handleRequest(patientId, medicationId, true);
-  };
-
-  const handleDeny = (patientId, medicationId) => {
-    const message = prompt('Please enter denial reason:');
-    if (message?.trim()) {
-      handleRequest(patientId, medicationId, false, message.trim());
-    }
+  const openDialog = (patientId, medicationId, isApproval) => {
+    setDialogData({
+      patientId,
+      medicationId,
+      isApproval,
+      message: ''
+    });
+    setShowDialog(true);
   };
 
   if (loading) {
@@ -180,13 +193,13 @@ const RequestsManagement = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap space-x-2">
                     <button
-                      onClick={() => handleApprove(request.patientId, request.medicationId)}
+                      onClick={() => openDialog(request.patientId, request.medicationId, true)}
                       className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 transition-colors"
                     >
                       Approve
                     </button>
                     <button
-                      onClick={() => handleDeny(request.patientId, request.medicationId)}
+                      onClick={() => openDialog(request.patientId, request.medicationId, false)}
                       className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition-colors"
                     >
                       Deny
@@ -198,6 +211,43 @@ const RequestsManagement = () => {
           </table>
         </div>
       )}
+
+      <Dialog open={showDialog} onOpenChange={setShowDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {dialogData.isApproval ? 'Approve Request' : 'Deny Request'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Message to Patient
+            </label>
+            <Textarea
+              value={dialogData.message}
+              onChange={(e) => setDialogData({ ...dialogData, message: e.target.value })}
+              placeholder="Enter your message to the patient..."
+              className="w-full"
+              rows={4}
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowDialog(false)}
+              className="mr-2"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleRequest}
+              variant={dialogData.isApproval ? "default" : "destructive"}
+            >
+              {dialogData.isApproval ? 'Approve' : 'Deny'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
